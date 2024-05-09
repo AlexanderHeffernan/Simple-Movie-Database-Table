@@ -23,6 +23,19 @@ namespace nwen
         unsigned short year;
         char director[50];
     };
+
+    // Abstract class representing a database table
+    class AbstractDbTable {
+    public:
+        virtual int rows() const = 0;
+        virtual const movie* get(int index) const = 0;
+        virtual void add(const movie& movie) = 0;
+        virtual bool update(unsigned long id, const movie& movie) = 0;
+        virtual bool remove(unsigned long id) = 0;
+
+        bool loadCSV(const std::string &filename) = 0;
+        bool saveCSV(const std::string &filename) = 0;
+    }
 }
 
 #endif /* __ABSTRACT_DB_HPP__ */

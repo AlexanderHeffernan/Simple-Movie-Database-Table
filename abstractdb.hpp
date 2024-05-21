@@ -1,15 +1,3 @@
-/**
- * abstractdb.hpp
- * C++ header file that should contain declaration for
- * - struct movie (given)
- * - AbstractDbTable abstract class
- * 
- * You need to modify this file to declare AbstractDbTable abstract class 
- * as specified in the hand-out (Task 1)
- */ 
-
-
-
 #ifndef __ABSTRACT_DB_HPP__
 #define __ABSTRACT_DB_HPP__
 
@@ -17,6 +5,7 @@
 
 namespace nwen 
 {
+    // Structure representing a movie
     struct movie {
         unsigned long id;
         char title[50];
@@ -27,15 +16,17 @@ namespace nwen
     // Abstract class representing a database table
     class AbstractDbTable {
     public:
+        // Pure virtual functions
         virtual int rows() const = 0;
         virtual const movie* get(int index) const = 0;
-        virtual void add(const movie& movie) = 0;
+        virtual bool add(const movie& movie) = 0;
         virtual bool update(unsigned long id, const movie& movie) = 0;
         virtual bool remove(unsigned long id) = 0;
 
-        bool loadCSV(const std::string &filename) = 0;
-        bool saveCSV(const std::string &filename) = 0;
-    }
-}
+        // Declaration for load and save functions
+        bool loadCSV(const std::string &filename);
+        bool saveCSV(const std::string &filename);
+    };
+} // namespace nwen
 
-#endif /* __ABSTRACT_DB_HPP__ */
+#endif // __ABSTRACT_DB_HPP__

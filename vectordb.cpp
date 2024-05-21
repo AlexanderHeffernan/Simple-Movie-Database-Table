@@ -1,68 +1,74 @@
-#include <iostream>
 #include "vectordb.hpp"
 #include <algorithm>
 
-namespace nwen {
+using namespace std;
 
+namespace nwen
+{
     /**
-     * Function to return the number of rows in the table.
+     * Gets the number of rows in the database.
+     * 
+     * @return Number of rows in the database.
      */
-    int VectorDbTable::rows() const {
-        return database.size();
+    int VectorDbTable::rows() const
+    {
+        return db.size();
     }
 
     /**
-     * Function to get a movie record at a given index.
+     * Gets an entry from the database at the specified index.
+     * 
+     * @param index Index of the entry to get from the database.
+     * @return If index is within bounds, return the entry at that index, else, return nullptr.
      */
-    const movie* VectorDbTable::get(int index) const {
-        if (index >= 0 && index < database.size()) {
-            return &database[index];
-        } else {
-            return nullptr;
-        }
+    const movie* VectorDbTable::get(int index) const
+    {
+        return (index >= 0 && index < db.size()) ? &db[index] : nullptr;
     }
 
     /**
-     * Function to add a new movie record to the table .
+     * Adds an entry to the database, assuming the movie is not already in the database.
+     *
+     * @param new_movie The movie to add to the database.
+     * @return True if movie was successfully added, false otherwise.
      */
-    bool VectorDbTable::add(const movie& movie) {
-        // Check if there is an existing record with the same id
-        for (const auto& entry : database) {
-            if (entry.id == movie.id) {
-                return false;
-            }
-        }
-        // Insert the new movie record
-        database.push_back(movie);
+    bool VectorDbTable::add(const movie& new_movie)
+    {
+        if (any_of(db.begin(), db.end(), [&new_movie](const movie& m) { return m.id == new_movie.id; }))
+            return false; // Movie already exists
+
+        db.push_back(new_movie);
         return true;
     }
 
     /**
-     * Function to update a movie record in the table.
+     * Updates a specified entry in the database.
+     * 
+     * @param id The id of the movie to update.
+     * @param new_movie The update of the movie.
+     * @return True if move was successfully updated, false otherwise.
      */
-    bool VectorDbTable::update(unsigned long id, const movie& movie) {
-        // Find the movie record with the given id and update it
-        for (auto& entry : database) {
-            if (entry.id == id) {
-                entry = movie;
-                return true;
-            }
+    bool VectorDbTable::update(unsigned long id, const movie& new_movie)
+    {
+        auto movie = find_if(db.begin(), db.end(), [id](const nwen::movie& m) { return m.id == id; });
+        if (movie != db.end()) {
+            *movie = new_movie;
+            return true;
         }
         return false; // Record with the given id not found
     }
 
     /**
-     * Function to remove a movie record from the table.
+     * Removes a specified entry in the database.
+     *
+     * @param id The id of the movie to remove.
+     * @return True if successfully removed, false otherwise.
      */
-    bool VectorDbTable::remove(unsigned long id) {
-        // Use remove_if algorithm to remove the movie record with the given id
-        auto it = std::remove_if(database.begin(), database.end(), [id](const movie& m) {
-            return m.id == id;
-        });
-
-        // Check if any records were removed
-        if (it != database.end()) {
-            database.erase(it, database.end());
+    bool VectorDbTable::remove(unsigned long id)
+    {
+        auto movie = remove_if(db.begin(), db.end(), [id](const nwen::movie& m) { return m.id == id; });
+        if (movie != db.end()) {
+            db.erase(movie, db.end());
             return true;
         }
         return false; // Record with the given id not found

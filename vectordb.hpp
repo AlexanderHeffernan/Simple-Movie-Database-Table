@@ -4,6 +4,8 @@
 #include "abstractdb.hpp"
 #include <vector>
 
+using namespace std;
+
 namespace nwen {
 
     /**
@@ -11,7 +13,7 @@ namespace nwen {
      */
     class VectorDbTable : public AbstractDbTable {
     private:
-        std::vector<movie> database;
+        vector<movie> db;
 
     public:
         // Default constructor

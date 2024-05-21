@@ -5,7 +5,9 @@
 
 namespace nwen 
 {
-    // Structure representing a movie
+    /**
+     * Structure representing a movie.
+     */
     struct movie {
         unsigned long id;
         char title[50];
@@ -13,7 +15,9 @@ namespace nwen
         char director[50];
     };
 
-    // Abstract class representing a database table
+    /**
+     * Abstract class representing a database table.
+     */
     class AbstractDbTable {
     public:
         // Pure virtual functions
@@ -27,7 +31,7 @@ namespace nwen
         bool loadCSV(const std::string &filename);
         bool saveCSV(const std::string &filename);
     };
-    
+
 } // namespace nwen
 
 #endif // __ABSTRACT_DB_HPP__

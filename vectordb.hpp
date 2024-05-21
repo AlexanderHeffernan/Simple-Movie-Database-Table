@@ -6,7 +6,9 @@
 
 namespace nwen {
 
-    // Class representing a database table implemented with a vector
+    /**
+     * Class representing a database table implemented with a vector.
+     */
     class VectorDbTable : public AbstractDbTable {
     private:
         std::vector<movie> database;
@@ -22,7 +24,7 @@ namespace nwen {
         bool update(unsigned long id, const movie& movie) override;
         bool remove(unsigned long id) override;
     };
-    
+
 } // namespace nwen
 
 #endif /* __VECTOR_DB_HPP__ */

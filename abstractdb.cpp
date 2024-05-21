@@ -4,37 +4,47 @@
 #include <iostream>
 #include <cstring>
 
-namespace nwen {
+using namespace std;
+
+namespace nwen
+{
+    template<typename Stream> // Allows error function to take in ofstream and ifstream files
+    /**
+     * Prints a specified error.
+     * @return false.
+     */
+    bool error(const string& errorMessage, Stream& file)
+    {
+        cerr << errorMessage << endl;
+        if (file.is_open())
+            file.close();
+
+        return false;
+    }
 
     /**
      * Saves the contents of the database table to a CSV file.
+     *
+     * @param filename Name of the to save to.
+     * @return True if successfully saved, false otherwise.
      */
-    bool AbstractDbTable::saveCSV(const std::string &filename) {
-        // Open the file for writing and ensure it is emptied
-        std::ofstream file(filename, std::ios::out | std::ios::trunc);
-        if (!file.is_open()) {
-            std::cerr << "Could not open the file " << filename << " for writing." << std::endl;
-            return false;
-        }
+    bool AbstractDbTable::saveCSV(const string &filename)
+    {
+        // Open the file for writing
+        ofstream file(filename, ios::out | ios::trunc);
+        if (!file.is_open())
+            return error("Could not open the file " + filename + " for writing.", file);
 
-        // Write every record from the table into the file
+        // Write each record to the file
         for (int i = 0; i < rows(); ++i) {
             const movie* m = get(i);
-            if (m) {
-                // Construct the CSV line for the current movie record
-                std::ostringstream oss;
-                oss << m->id << ",\"" << m->title << "\"," << m->year << ",\"" << m->director << "\"\n";
-                
-                // Write the constructed line to the file
-                file << oss.str();
-                
-                // Check if writing to the file failed
-                if (file.fail()) {
-                    std::cerr << "Error writing to the file " << filename << std::endl;
-                    file.close();
-                    return false;
-                }
-            }
+            if (!m)
+                continue;
+
+            // Format the movie record as CSV and write to file
+            file << m->id << ",\"" << m->title << "\"," << m->year << ",\"" << m->director << "\"\n";
+            if (file.fail()) // Check for writing errors
+                return error("Error writing to the file " + filename, file);
         }
 
         // Close the file
@@ -44,72 +54,60 @@ namespace nwen {
 
     /**
      * Removes quotes from a string.
+     *
+     * @param str Strings to remove the quotes from.
+     * @return The string with quotes removed.
      */
-    std::string removeQuotes(const std::string &str) {
-        if (str.length() > 1 && str.front() == '"' && str.back() == '"') {
-            return str.substr(1, str.length() - 2);
-        }
-        return str;
+    string removeQuotes(const string &str) {
+        return (str.length() > 1 && str.front() == '"' && str.back() == '"') ? str.substr(1, str.length() - 2) : str;
     }
 
     /**
      * Loads the contents of a CSV file into the database table.
+     * 
+     * @param filename The name of the file to load from.
+     * @return True if successfully loaded, false otherwise.
      */
-    bool AbstractDbTable::loadCSV(const std::string &filename) {
+    bool AbstractDbTable::loadCSV(const string &filename) {
         // Open the file for reading
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Could not open the file " << filename << " for reading." << std::endl;
-            return false;
-        }
+        ifstream file(filename);
+        if (!file.is_open())
+            return error("Could not open the file " + filename + " for reading.", file);
 
-        std::string line;
-        while (std::getline(file, line)) {
-            std::istringstream ss(line);
+        // Read each line of the CSV file
+        string line;
+        while (getline(file, line)) {
+            istringstream ss(line);
             movie m;
-            std::string id, title, year, director;
+            // Declare strings for the line
+            string id, title, year, director;
 
-            // Parse the id
-            if (!std::getline(ss, id, ',')) {
-                std::cerr << "Error parsing id in line: " << line << std::endl;
-                file.close();
-                return false;
-            }
-            m.id = std::stoul(id);
+            // Parse each field from the line
+            if (!getline(ss, id, ',') || !getline(ss, title, ',') || !getline(ss, year, ',') || !getline(ss, director, ','))
+                return error("Error parsing line: " + line, file);
 
-            // Parse the title
-            if (!std::getline(ss, title, ',')) {
-                std::cerr << "Error parsing title in line: " << line << std::endl;
-                file.close();
-                return false;
-            }
-            title = removeQuotes(title);
-            std::strncpy(m.title, title.c_str(), sizeof(m.title) - 1);
-            m.title[sizeof(m.title) - 1] = '\0'; // Ensure null termination
+            try {
+                // Convert id to unsigned long
+                m.id = stoul(id);
 
-            // Parse the year
-            if (!std::getline(ss, year, ',')) {
-                std::cerr << "Error parsing year in line: " << line << std::endl;
-                file.close();
-                return false;
-            }
-            m.year = static_cast<unsigned short>(std::stoi(year));
+                // Remove quotes from title and copy to movie title
+                title = removeQuotes(title);
+                strncpy(m.title, title.c_str(), sizeof(m.title) - 1);
+                m.title[sizeof(m.title) - 1] = '\0';
 
-            // Parse the director
-            if (!std::getline(ss, director, ',')) {
-                std::cerr << "Error parsing director in line: " << line << std::endl;
-                file.close();
-                return false;
-            }
-            director = removeQuotes(director);
-            std::strncpy(m.director, director.c_str(), sizeof(m.director) - 1);
-            m.director[sizeof(m.director) - 1] = '\0'; // Ensure null termination
+                // Convert year to integer
+                m.year = stoi(year);
 
-            // Add the movie to the database
-            if (!add(m)) {
-                std::cerr << "Error adding movie to the database for line: " << line << std::endl;
-                file.close();
-                return false;
+                // Remove ruoes from director and copy to movie director
+                director = removeQuotes(director);
+                strncpy(m.director, director.c_str(), sizeof(m.director) - 1);
+                m.director[sizeof(m.director) - 1] = '\0';
+
+                // Add the movie record to the database
+                if (!add(m))
+                    error("Error adding movie to the database for line " + line, file);
+            } catch (const exception& e) { // Handle exceptions during passing
+                return error("Exception parsing line: " + line + " - " + e.what(), file);
             }
         }
 
@@ -117,5 +115,4 @@ namespace nwen {
         file.close();
         return true;
     }
-
 } // namespace nwen

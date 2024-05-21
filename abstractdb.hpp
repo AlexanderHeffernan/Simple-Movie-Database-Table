@@ -27,6 +27,7 @@ namespace nwen
         bool loadCSV(const std::string &filename);
         bool saveCSV(const std::string &filename);
     };
+    
 } // namespace nwen
 
 #endif // __ABSTRACT_DB_HPP__

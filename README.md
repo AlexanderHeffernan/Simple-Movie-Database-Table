@@ -1,4 +1,4 @@
-Simple Database Table Implementation in C++
+# Simple Database Table Implementation in C++
 
 This project is part of an assignment aimed at implementing a simple database table using C++ programming constructs. The database table, which stores movie records, supports basic operations such as adding, updating, and removing records.
 
@@ -81,3 +81,6 @@ int main() {
     return 0;
 }
 ```
+## Acknowledgements
+
+These implementations were developed as part of a project for NWEN241 at Victoria University of Wellington.
